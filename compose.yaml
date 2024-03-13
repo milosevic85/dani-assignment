@@ -1,0 +1,10 @@
+version: '3'
+services:
+  movies-service:
+    image: temp-movies-image
+    ports:
+      - "8081:8081"
+  actor-service:
+    image: temp-actor-image
+    ports:
+      - "8082:8082"
