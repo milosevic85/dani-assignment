@@ -6,7 +6,7 @@ import java.io.File;
 import java.io.IOException;
 
 public class PictureService {
-    private static final String picDirPath = "src/main/resources/pictures/";
+    private static final String picDirPath = "src/test/resources/pictures/";
 
     public static void savePic(Long imdbId, MultipartFile picFile) throws IOException {
 
