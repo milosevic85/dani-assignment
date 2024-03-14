@@ -10,7 +10,6 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode
 @ToString
 public class Actor {
@@ -26,7 +25,7 @@ public class Actor {
     private String lastName;
 
     @Column(nullable = false)
-    private LocalDate bornDate;
+    private String bornDate;
 
     // Each actor can be associated with many movies, actor of course played in other movies also, I had to be careful here
     @ManyToMany
@@ -37,4 +36,18 @@ public class Actor {
     )
     private List<Movie> movies;
 
+    public Actor(Long id, String firstName, String lastName, String bornDate, List<Movie> movies) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.bornDate = bornDate;
+        this.movies = movies;
+    }
+    public Actor(Long id, String firstName, String lastName, String bornDate) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.bornDate = bornDate;
+        this.movies = movies;
+    }
 }
