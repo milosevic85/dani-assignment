@@ -23,6 +23,12 @@ public class PictureService {
     }
 
     private static String getFileRouteExtension(String f) {
-        return f.substring(f.lastIndexOf('.'));
+        int lastDotIndex = f.lastIndexOf('.');
+        if (lastDotIndex != -1 && lastDotIndex < f.length() - 1) {
+            return f.substring(lastDotIndex);
+        } else {
+            // bugfix: I return default to some extension if no extension found
+            return ".jpg";
+        }
     }
 }

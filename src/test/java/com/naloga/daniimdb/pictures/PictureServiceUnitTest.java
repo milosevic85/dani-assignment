@@ -1,4 +1,4 @@
-package com.naloga.daniimdb;
+package com.naloga.daniimdb.pictures;
 
 import com.naloga.daniimdb.movie.services.PictureService;
 import org.junit.jupiter.api.Test;
