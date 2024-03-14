@@ -39,11 +39,16 @@ public class ActorController {
         return actorService.searchActorsByName(firstName, lastName);
     }
 
-
     // get an actor by id
     @GetMapping("/{id}")
     public ResponseEntity<Actor> getActorById(@PathVariable Long id) {
         return actorService.getActorById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+    }
+
+    // filter actors by age
+    @GetMapping("/age/{age}")
+    public List<Actor> getActorsByAge(@PathVariable int age) {
+        return actorService.getActorsWithAgeAbove(age);
     }
 
     // CRUD OPERATIONS - task .pdf by SRC:

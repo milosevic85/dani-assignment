@@ -4,6 +4,7 @@ import com.naloga.daniimdb.movie.Movie;
 import com.naloga.daniimdb.movie.repository.MovieRepository;
 import com.naloga.daniimdb.util.PictureUrlGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,11 +25,13 @@ public class MovieService {
     }
 
     // list all movies
+    @Cacheable("movies")
     public List<Movie> getAllMovies() {
         return movieRepository.findAll();
     }
 
     // list all movies with their pictures
+    @Cacheable("movies")
     public Optional<Movie> getAllMoviesWithPictures(Long imdbId) {
         return movieRepository.findByImdbIDWithPictures(imdbId);
     }
@@ -44,6 +47,7 @@ public class MovieService {
     }
 
     // generate a picture URL for a movie by its imdbId
+    @Cacheable("pictureUrls")
     public String generatePictureUrl(Long imdbId) {
         return PictureUrlGenerator.generatePictureUrl(imdbId);
     }

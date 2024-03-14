@@ -3,7 +3,6 @@ package com.naloga.daniimdb.actor;
 import com.naloga.daniimdb.movie.Movie;
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -36,6 +35,19 @@ public class Actor {
     )
     private List<Movie> movies;
 
+    // I could use immutability I know to be better and more robust for multi-threading in future etc., something like that for instance:
+//    public Actor withFirstName(String firstName) {
+//        return new Actor(this.id, firstName, this.lastName, this.bornDate, this.movies);
+//    }
+//
+//    public Actor withLastName(String lastName) {
+//        return new Actor(this.id, this.firstName, lastName, this.bornDate, this.movies);
+//    }
+//
+//    public Actor withBornDate(String bornDate) {
+//        return new Actor(this.id, this.firstName, this.lastName, bornDate, this.movies);
+//    }
+
     public Actor(Long id, String firstName, String lastName, String bornDate, List<Movie> movies) {
         this.id = id;
         this.firstName = firstName;
@@ -48,6 +60,5 @@ public class Actor {
         this.firstName = firstName;
         this.lastName = lastName;
         this.bornDate = bornDate;
-        this.movies = movies;
     }
 }
