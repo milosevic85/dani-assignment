@@ -8,14 +8,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/movies")
 public class MovieController {
 
-    private MovieService movieService;
+    private final MovieService movieService;
 
     @Autowired
     public MovieController(MovieService movieService){
@@ -26,6 +28,12 @@ public class MovieController {
     @GetMapping
     public List<Movie> getAllMovies() {
         return movieService.getAllMovies();
+    }
+
+    // list all movies with their pictures
+    @GetMapping("/with-pictures")
+    public Optional<Movie> getAllMoviesWithPictures(@RequestParam Long imdbId) {
+        return movieService.getAllMoviesWithPictures(imdbId);
     }
 
     // list movies with pagination support
@@ -42,22 +50,31 @@ public class MovieController {
 
     // added extra check for imdbId
     @GetMapping("/{imdbId}")
-    public ResponseEntity<Movie> getMovieByImdbId(@PathVariable long imdbId) {
-        return movieService.getMovieByImdbId(imdbId).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<Movie> getMovieByImdbId(@PathVariable Long imdbId) {
+        return movieService.getMovieByImdbId(imdbId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // generate a picture url for a given imdbId
+    @GetMapping("/{imdbId}/picture-url")
+    public ResponseEntity<String> getMoviePictureUrl(@PathVariable Long imdbId) {
+        String pictureUrl = movieService.generatePictureUrl(imdbId);
+        return ResponseEntity.ok(pictureUrl);
     }
 
     // Task: I need to add CRUD operations
     // create a new movie
     @PostMapping
-    public ResponseEntity<Movie> createMovie(@RequestBody Movie movie) {
-        Movie createdMovie = movieService.createMovie(movie);
+    public ResponseEntity<Movie> createMovie(@RequestParam("picFile") MultipartFile picFile, @RequestParam("movie") Movie movie) {
+        Movie createdMovie = movieService.createMovie(movie, picFile);
 
         return ResponseEntity.ok(createdMovie);
     }
 
     // update existing movie
     @PutMapping("/{imdbId}")
-    public ResponseEntity<Movie> updateMovie(@PathVariable long imdbId, @RequestBody Movie updatedMovie) {
+    public ResponseEntity<Movie> updateMovie(@PathVariable Long imdbId, @RequestBody Movie updatedMovie) {
         Movie updated = movieService.updateMovie(imdbId, updatedMovie);
 
         return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();

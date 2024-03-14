@@ -89,9 +89,9 @@ public class ActorServiceUnitTest {
         Long actorId = Long.valueOf(1);
 
         List<Movie> moviesSugman = Arrays.asList(
-                new Movie("1A432", "Nasa mala klinika", 2000, "Komedija"),
-                new Movie("1A433", "Preseren", 2005, "Podobitev slavne osebnosti"),
-                new Movie("1A434", "Predmestje", 2010, "Drama")
+                new Movie(12132L, "Nasa mala klinika", 2000, "Komedija"),
+                new Movie(12133L, "Preseren", 2005, "Podobitev slavne osebnosti"),
+                new Movie(12134L, "Predmestje", 2010, "Drama")
         );
 
         movieRepository.saveAll(moviesSugman);

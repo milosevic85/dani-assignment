@@ -16,10 +16,7 @@ public class Movie {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false, unique = true)
-    private String imdbID;
+    private Long imdbID;
 
     @Column(nullable = false)
     private String title;
@@ -30,14 +27,13 @@ public class Movie {
     @Column(nullable = false)
     private String description;
 
+    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL)
+    private List<MoviePicture> pictures;
+
     @ManyToMany(mappedBy = "movies")
     private List<Actor> actors;
 
-    public Movie(String title) {
-        this.title = title;
-    }
-
-    public Movie(String imdbId, String title, int releaseYear, String description) {
+    public Movie(Long imdbId, String title, int releaseYear, String description) {
         this.imdbID = imdbId;
         this.title = title;
         this.releaseYear = releaseYear;
