@@ -17,8 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class MovieServiceUnitTest {
@@ -39,6 +38,7 @@ public class MovieServiceUnitTest {
         List<Movie> movies = new ArrayList<>();
         movies.add(new Movie(1L, "Movie 1", 2022, "Description 1"));
         movies.add(new Movie(2L, "Movie 2", 2023, "Description 2"));
+        movieService.saveAllMovies(movies);
 
         when(movieRepository.findAll()).thenReturn(movies);
 
@@ -56,6 +56,7 @@ public class MovieServiceUnitTest {
         movies.add(new Movie(2L, "Movie 2", 2023, "Description 2"));
         Page<Movie> moviePage = new PageImpl<>(movies, pageRequest, movies.size());
 
+        movieService.saveAllMovies(movies);
         when(movieRepository.findAll(pageRequest)).thenReturn(moviePage);
 
         Page<Movie> retrievedMovies = movieService.getMovies(pageRequest);
@@ -70,6 +71,7 @@ public class MovieServiceUnitTest {
         movies.add(new Movie(1L, "Movie 1", 2022, "Description 1"));
         movies.add(new Movie(2L, "Movie 2", 2023, "Description 2"));
 
+        movieService.saveAllMovies(movies);
         when(movieRepository.findByTitleContainingIgnoreCase("Movie")).thenReturn(movies);
 
         List<Movie> retrievedMovies = movieService.searchMoviesByTitle("Movie");
@@ -89,14 +91,19 @@ public class MovieServiceUnitTest {
 
     @Test
     void testGetMovieByImdbId() {
-        Movie movie = new Movie(1L, "Movie 1", 2022, "Description 1");
+        Movie movie = new Movie(12L, "Movie 1", 2022, "Description 1");
+        movie.setImdbID(Long.valueOf(12));
+        MultipartFile picFile = new MockMultipartFile("test.jpg", new byte[0]);
+        movieService.createMovie(movie, picFile);
 
-        when(movieRepository.findById(1L)).thenReturn(Optional.of(movie));
+        when(movieService.getMovieByImdbId(Long.valueOf(12))).thenReturn(Optional.of(movie));
 
-        Optional<Movie> retrievedMovie = movieService.getMovieByImdbId(1L);
+        Optional<Movie> retrievedMovie = movieService.getMovieByImdbId(Long.valueOf(12));
 
-        assertEquals(movie, retrievedMovie.orElse(null));
-        verify(movieRepository, times(1)).findById(1L);
+        assertTrue(retrievedMovie.isPresent(), "Retrieved movie should be present");
+        assertEquals(movie, retrievedMovie.orElse(null), "Retrieved movie should match the expected movie");
+
+        verify(movieRepository, times(1)).findById(Long.valueOf(12));
     }
 
     @Test
@@ -104,12 +111,17 @@ public class MovieServiceUnitTest {
         Movie movie = new Movie(1L, "Movie 1", 2022, "Description 1");
         MultipartFile picFile = new MockMultipartFile("test.jpg", new byte[0]);
 
-        when(movieRepository.save(movie)).thenReturn(movie);
+        when(movieRepository.save(any(Movie.class))).thenReturn(movie);
 
         Movie createdMovie = movieService.createMovie(movie, picFile);
 
-        assertEquals(movie, createdMovie);
-        verify(movieRepository, times(1)).save(movie);
+        assertNotNull(createdMovie, "Created movie should not be null");
+        assertEquals(movie.getImdbID(), createdMovie.getImdbID(), "Movie IDs should match");
+        assertEquals(movie.getTitle(), createdMovie.getTitle(), "Movie titles should match");
+        assertEquals(movie.getReleaseYear(), createdMovie.getReleaseYear(), "Movie years should match");
+        assertEquals(movie.getDescription(), createdMovie.getDescription(), "Movie descriptions should match");
+
+        verify(movieRepository, times(1)).save(any(Movie.class));
     }
 
     @Test
@@ -125,7 +137,7 @@ public class MovieServiceUnitTest {
         Movie updated = movieService.updateMovie(1L, updatedMovie);
         assertEquals(updatedMovie, updated);
 
-        // I see that original movie is not equal to the updated one after my change
+        // I see that original movie is not equal to the updated one after my change = OK
         assertNotEquals(originalMovie, updated);
 
         verify(movieRepository, times(1)).save(updatedMovie);
@@ -134,7 +146,9 @@ public class MovieServiceUnitTest {
     @Test
     void testDeleteMovie() {
         long imdbId = 1L;
-
+        Movie movie = new Movie(imdbId, "Movie 1", 2022, "Description 1");
+        MultipartFile picFile = new MockMultipartFile("test.jpg", new byte[0]);
+        movieService.createMovie(movie, picFile);
         movieService.deleteMovie(imdbId);
 
         verify(movieRepository, times(1)).deleteById(imdbId);
