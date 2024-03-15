@@ -68,10 +68,16 @@ public class ActorService {
 
     // update actor
     public Actor updateActor(Long id, Actor updatedActor) {
-        if (actorRepository.existsById(id)) {
-            updatedActor.setId(id);
+        Optional<Actor> existingActorOptional = actorRepository.findById(id);
 
-            return actorRepository.save(updatedActor);
+        if (existingActorOptional.isPresent()) {
+            Actor existingActor = existingActorOptional.get();
+
+            existingActor.setFirstName(updatedActor.getFirstName());
+            existingActor.setLastName(updatedActor.getLastName());
+            existingActor.setBornDate(updatedActor.getBornDate());
+
+            return actorRepository.save(existingActor);
         }
         return null;
     }

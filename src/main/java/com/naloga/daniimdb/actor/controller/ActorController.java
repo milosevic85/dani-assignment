@@ -53,18 +53,16 @@ public class ActorController {
 
     // CRUD OPERATIONS - task .pdf by SRC:
     // create actor
-    @PostMapping
+    @PostMapping("/actors")
     public ResponseEntity<Actor> createActor(@RequestBody Actor actor) {
         Actor createdActor = actorService.createActor(actor);
-
         return ResponseEntity.ok(createdActor);
     }
 
     // update actor
-    @PutMapping("/{id}")
+    @PutMapping("/actors/{id}")
     public ResponseEntity<Actor> updateActor(@PathVariable Long id, @RequestBody Actor updatedActor) {
         Actor updated = actorService.updateActor(id, updatedActor);
-
         return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }
 
