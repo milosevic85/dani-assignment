@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/actors")
+@RequestMapping("/actors")
 public class ActorController {
 
     private final ActorService actorService;

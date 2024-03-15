@@ -86,8 +86,7 @@ public class ActorServiceUnitTest {
 
     @Test
     void testGetActorsWithPagination() {
-        Long actorId = Long.valueOf(1);
-
+        // Create and save movies
         List<Movie> moviesSugman = Arrays.asList(
                 new Movie(12132L, "Nasa mala klinika", 2000, "Komedija"),
                 new Movie(12133L, "Preseren", 2005, "Podobitev slavne osebnosti"),
@@ -96,20 +95,27 @@ public class ActorServiceUnitTest {
 
         movieRepository.saveAll(moviesSugman);
 
-        Actor actor = new Actor(actorId, "Jernej", "Sugman", "23.12.1968", moviesSugman);
+        // Retrieve saved movies
+        List<Movie> savedMovies = movieRepository.findAll();
 
+        // Create actor with reference to saved movies
+        Long actorId = Long.valueOf(1);
+        Actor actor = new Actor(actorId, "Jernej", "Sugman", "23.12.1968", savedMovies);
+
+        // Save actor
         actorRepository.save(actor);
 
+        // Perform pagination query
         Pageable pageable = PageRequest.of(0, 10);
-
         Page<Actor> actorsPage = actorService.getActors(pageable);
         List<Actor> actors = actorsPage.getContent();
 
+        // Assertions
         assertEquals(1, actors.size());
         assertEquals("Jernej", actors.get(0).getFirstName());
         assertEquals("Sugman", actors.get(0).getLastName());
         assertEquals("23.12.1968", actors.get(0).getBornDate());
-        assertEquals(moviesSugman.size(), actors.get(0).getMovies().size());
+        assertEquals(savedMovies.size(), actors.get(0).getMovies().size());
     }
 
     // I check the values under correct id's for instance

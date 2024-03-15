@@ -38,7 +38,7 @@ public class Actor {
             joinColumns = @JoinColumn(name = "ACTOR_ID"),
             inverseJoinColumns = @JoinColumn(name = "MOVIE_ID")
     )
-    private Set<Movie> movies = new HashSet<>();
+    private List<Movie> movies = new ArrayList<>();
 
     // I could use immutability to be better and more robust for multi-threading in future etc., something like that instead of constructors:
 //    public Actor withFirstName(String firstName) {
@@ -58,7 +58,7 @@ public class Actor {
         this.firstName = firstName;
         this.lastName = lastName;
         this.bornDate = bornDate;
-        this.movies = (Set<Movie>) movies;
+        this.movies = movies;
     }
     public Actor(Long id, String firstName, String lastName, String bornDate) {
         this.id = id;
