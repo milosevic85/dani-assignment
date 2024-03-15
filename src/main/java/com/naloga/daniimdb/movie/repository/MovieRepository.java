@@ -26,6 +26,4 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
     // to find all movies with pictures included
     @Query("SELECT DISTINCT m FROM Movie m LEFT JOIN FETCH m.pictures p WHERE m.imdbID = :imdbId")
     Optional<Movie> findByImdbIDWithPictures(@Param("imdbId") Long imdbId);
-
-
 }

@@ -57,6 +57,15 @@ public class MovieService {
         return movieRepository.findById(imdbId);
     }
 
+    public void saveMovie(Movie movie) {
+        movie.getActors().forEach(actor -> actor.setMovie(movie));
+        movieRepository.save(movie);
+    }
+
+    public void saveAllMovies(List<Movie> movies) {
+        movieRepository.saveAll(movies);
+    }
+
     // CRUD OPERATIONS according to task from SRC
     // create a movie
     public Movie createMovie(Movie movie, MultipartFile picFile) {

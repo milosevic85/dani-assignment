@@ -3,7 +3,8 @@ package com.naloga.daniimdb.actor;
 import com.naloga.daniimdb.movie.Movie;
 import jakarta.persistence.*;
 import lombok.*;
-import java.util.List;
+
+import java.util.*;
 
 @Entity
 @Getter
@@ -11,6 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @EqualsAndHashCode
 @ToString
+@Table(name = "ACTOR")
 public class Actor {
 
     @Id
@@ -26,16 +28,19 @@ public class Actor {
     @Column(nullable = false)
     private String bornDate;
 
-    // Each actor can be associated with many movies, actor of course played in other movies also, I had to be careful here
-    @ManyToMany
-    @JoinTable(
-            name = "movie_actor",
-            joinColumns = @JoinColumn(name = "actor_id"),
-            inverseJoinColumns = @JoinColumn(name = "movie_id")
-    )
-    private List<Movie> movies;
+    @ManyToOne
+    @JoinColumn(name = "movie_id")
+    private Movie movie;
 
-    // I could use immutability I know to be better and more robust for multi-threading in future etc., something like that for instance:
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "ACTOR_MOVIE",
+            joinColumns = @JoinColumn(name = "ACTOR_ID"),
+            inverseJoinColumns = @JoinColumn(name = "MOVIE_ID")
+    )
+    private Set<Movie> movies = new HashSet<>();
+
+    // I could use immutability to be better and more robust for multi-threading in future etc., something like that instead of constructors:
 //    public Actor withFirstName(String firstName) {
 //        return new Actor(this.id, firstName, this.lastName, this.bornDate, this.movies);
 //    }
@@ -53,12 +58,23 @@ public class Actor {
         this.firstName = firstName;
         this.lastName = lastName;
         this.bornDate = bornDate;
-        this.movies = movies;
+        this.movies = (Set<Movie>) movies;
     }
     public Actor(Long id, String firstName, String lastName, String bornDate) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.bornDate = bornDate;
+    }
+
+    public Actor(String firstName, String lastName, String bornDate) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.bornDate = bornDate;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, firstName, lastName, bornDate);
     }
 }

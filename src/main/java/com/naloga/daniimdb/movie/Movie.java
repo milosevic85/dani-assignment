@@ -3,7 +3,8 @@ package com.naloga.daniimdb.movie;
 import com.naloga.daniimdb.actor.Actor;
 import jakarta.persistence.*;
 import lombok.*;
-import java.util.List;
+
+import java.util.*;
 
 @Entity
 @Getter
@@ -12,6 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @EqualsAndHashCode
 @ToString
+@Table(name = "MOVIE")
 public class Movie {
 
     @Id
@@ -27,16 +29,30 @@ public class Movie {
     @Column(nullable = false)
     private String description;
 
-    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<MoviePicture> pictures;
 
-    @ManyToMany(mappedBy = "movies")
-    private List<Actor> actors;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "actor_movie",
+            joinColumns = @JoinColumn(name = "movie_id"),
+            inverseJoinColumns = @JoinColumn(name = "actor_id"))
+    private Set<Actor> actors = new HashSet<>();
 
     public Movie(Long imdbId, String title, int releaseYear, String description) {
         this.imdbID = imdbId;
         this.title = title;
         this.releaseYear = releaseYear;
         this.description = description;
+    }
+
+    public Movie(String title, int releaseYear, String description) {
+        this.title = title;
+        this.releaseYear = releaseYear;
+        this.description = description;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(imdbID, title, releaseYear, description);
     }
 }

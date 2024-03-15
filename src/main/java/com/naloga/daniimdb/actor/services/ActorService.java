@@ -52,6 +52,14 @@ public class ActorService {
         return actorRepository.findActorsWithAgeAbove(age);
     }
 
+    public void saveActor(Actor actor) {
+        actorRepository.save(actor);
+    }
+
+    public void saveAllActors(List<Actor> actors) {
+        actorRepository.saveAll(actors);
+    }
+
     // CRUD OPERATIONS as in task by SRC:
     // create actor
     public Actor createActor(Actor actor) {
