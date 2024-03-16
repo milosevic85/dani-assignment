@@ -65,7 +65,7 @@ public class MovieController {
 
     // Task: I need to add CRUD operations
     // create a new movie
-    @PostMapping
+    @PostMapping("/movies")
     public ResponseEntity<Movie> createMovie(@RequestParam("picFile") MultipartFile picFile, @RequestParam("movie") Movie movie) {
         Movie createdMovie = movieService.createMovie(movie, picFile);
 
@@ -73,7 +73,7 @@ public class MovieController {
     }
 
     // update existing movie
-    @PutMapping("/{imdbId}")
+    @PutMapping("/movies/{imdbId}")
     public ResponseEntity<Movie> updateMovie(@PathVariable Long imdbId, @RequestBody Movie updatedMovie) {
         Movie updated = movieService.updateMovie(imdbId, updatedMovie);
 

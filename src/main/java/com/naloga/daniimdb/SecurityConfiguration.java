@@ -5,12 +5,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-
-import static org.springframework.security.config.Customizer.withDefaults;
 
 
 @Profile("test")
@@ -31,10 +30,14 @@ public class SecurityConfiguration {
     @Profile("test")
     public SecurityFilterChain securityFilterChainTest(HttpSecurity http) throws Exception {
         // [milosevic85], I noticed a lot of deprecated changes from spring 5.7 up to 6.1 (authorizeRequests and antMatchers are RequestMatchers), this bean is only active for the "test" profile
-        http.authorizeRequests(authorizeRequests ->
-                        authorizeRequests.anyRequest().permitAll())
-                .httpBasic(withDefaults())
-                .csrf(csrf -> csrf.disable());
+        http
+                .authorizeRequests(authorizeRequests ->
+                        authorizeRequests.anyRequest().permitAll()
+                )
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(sessionManagement ->
+                        sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                );
 
         return http.build();
     }
