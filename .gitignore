@@ -1,6 +1,5 @@
 HELP.md
 #I will ignore this temporary
-compose.yaml
 #############################
 target/
 !.mvn/wrapper/maven-wrapper.jar

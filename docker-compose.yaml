@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  dani-imdb:
+    image: dani-imdb:latest
+    ports:
+      - "9092:9092"
+    environment:
+      SPRING_PROFILES_ACTIVE: test
+    depends_on:
+      - h2-database
+    networks:
+      - backend-network
+
+  h2-database:
+    image: "jesperdj/h2"
+    ports:
+      - "1521:1521"
+    environment:
+      - H2_OPTIONS=-ifNotExists
+    networks:
+      - backend-network
+
+networks:
+  backend-network:
+    driver: bridge
