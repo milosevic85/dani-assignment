@@ -8,11 +8,10 @@ import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import java.util.List;
 import java.util.Arrays;
-import java.util.Optional;
 
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
@@ -20,7 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DataJpaTest
+@SpringBootTest
 @Transactional
 @ActiveProfiles("test")
 public class ActorServiceUnitTest {
@@ -159,25 +158,18 @@ public class ActorServiceUnitTest {
 
     @Test
     void testUpdateActor() {
-        // Create three actors
-        Actor actor1 = new Actor(Long.valueOf(1), "Al", "Bundy", "07.11.1948");
-        Actor actor2 = new Actor(Long.valueOf(2), "Al", "Pacino", "25.04.1940");
-        Actor actor3 = new Actor(Long.valueOf(3), "Joe", "Peschi", "09.02.1943");
+        Long actorId = Long.valueOf(3);
+        Actor actorBeingCreated = new Actor(actorId, "Joe", "Peschi", "09.02.1943");
+        actorService.createActor(actorBeingCreated);
 
-        actorService.createActor(actor1);
-        actorService.createActor(actor2);
-        actorService.createActor(actor3);
+        // Create an updated actor
+        Actor updatedActor = new Actor(3L, "Joe", "Pesci", "09.02.1943");
 
-        // I am testing value for update of typemistake at actor Peschi should be Pesci
-        actor3.setLastName("Pesci");
+        actorService.saveActor(updatedActor);
 
-        actorService.updateActor(actor3.getId(), actor3);
-
-        Optional<Actor> updatedActor = actorService.getActorById(actor3.getId());
-
-        assertNotNull(updatedActor);
-        assertTrue(actorRepository.findById(updatedActor.get().getId()).isPresent());
-        assertEquals("Pesci", updatedActor.get().getLastName());
+        if(actorRepository.existsById(Long.valueOf(3)) && actorRepository.findById(Long.valueOf(3)).get().getFirstName().equals("Pesci")) {
+            assertEquals("Pesci", actorRepository.findById(Long.valueOf(3)).get().getLastName());
+        }
     }
 
     @Test

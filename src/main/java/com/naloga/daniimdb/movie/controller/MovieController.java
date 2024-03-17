@@ -1,15 +1,19 @@
 package com.naloga.daniimdb.movie.controller;
 
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.naloga.daniimdb.movie.Movie;
 import com.naloga.daniimdb.movie.services.MovieService;
+import com.naloga.daniimdb.movie.services.PictureService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,10 +22,14 @@ import java.util.Optional;
 public class MovieController {
 
     private final MovieService movieService;
+    private final PictureService pictureService;
+    private final ObjectMapper objectMapper;
 
     @Autowired
-    public MovieController(MovieService movieService){
+    public MovieController(MovieService movieService, PictureService pictureService, ObjectMapper objectMapper) {
         this.movieService = movieService;
+        this.pictureService = pictureService;
+        this.objectMapper = objectMapper;
     }
 
     // list all movies
@@ -64,16 +72,26 @@ public class MovieController {
     }
 
     // Task: I need to add CRUD operations
-    // create a new movie
-    @PostMapping("/movies")
-    public ResponseEntity<Movie> createMovie(@RequestParam("picFile") MultipartFile picFile, @RequestParam("movie") Movie movie) {
-        Movie createdMovie = movieService.createMovie(movie, picFile);
 
-        return ResponseEntity.ok(createdMovie);
+    // create a new movie
+    // bugfixed: Movie movie with annotation @ModelAttribute
+    @PostMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Movie> createMovie(@RequestParam("picFile") MultipartFile picFile,
+                                             @ModelAttribute Movie movie) {
+
+        try {
+            PictureService.savePic(movie.getImdbID(), picFile);
+
+            Movie createdMovie = movieService.createMovie(movie, picFile);
+            return ResponseEntity.ok(createdMovie);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     // update existing movie
-    @PutMapping("/movies/{imdbId}")
+    @PutMapping("/update/{imdbId}")
     public ResponseEntity<Movie> updateMovie(@PathVariable Long imdbId, @RequestBody Movie updatedMovie) {
         Movie updated = movieService.updateMovie(imdbId, updatedMovie);
 
@@ -84,7 +102,6 @@ public class MovieController {
     @DeleteMapping("/{imdbId}")
     public ResponseEntity<Void> deleteMovie(@PathVariable Long imdbId) {
         movieService.deleteMovie(imdbId);
-
         return ResponseEntity.noContent().build();
     }
 }

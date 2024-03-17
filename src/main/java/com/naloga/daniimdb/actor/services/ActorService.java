@@ -72,14 +72,14 @@ public class ActorService {
 
         if (existingActorOptional.isPresent()) {
             Actor existingActor = existingActorOptional.get();
-
             existingActor.setFirstName(updatedActor.getFirstName());
             existingActor.setLastName(updatedActor.getLastName());
             existingActor.setBornDate(updatedActor.getBornDate());
 
             return actorRepository.save(existingActor);
+        } else {
+            throw new IllegalArgumentException("Actor with ID " + id + " not found");
         }
-        return null;
     }
 
     // delete actor by id

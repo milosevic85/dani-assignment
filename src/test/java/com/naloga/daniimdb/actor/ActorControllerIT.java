@@ -3,7 +3,6 @@ package com.naloga.daniimdb.actor;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.naloga.daniimdb.SecurityConfiguration;
-import com.naloga.daniimdb.actor.controller.ActorController;
 import com.naloga.daniimdb.actor.repository.ActorRepository;
 import com.naloga.daniimdb.actor.services.ActorService;
 import com.naloga.daniimdb.movie.Movie;
@@ -12,7 +11,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
@@ -20,7 +20,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -36,7 +35,8 @@ import static org.mockito.Mockito.when;
 
 @Profile("test")
 @Import(SecurityConfiguration.class)
-@WebMvcTest(ActorController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 public class ActorControllerIT {
 
     @Autowired
@@ -174,55 +174,41 @@ public class ActorControllerIT {
                 .andExpect(MockMvcResultMatchers.jsonPath("$[1].firstName").value("Mojca"));
     }
 
-    // TODO: [milosevic85], strangely only GET, DELETE is allowed although I made in security configuration to permitAll at least for test - need to check
     @Test
     void testCreateActor() throws Exception {
         Actor actor = new Actor(1L, "Janez", "Novak", "01.01.1990");
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBasicAuth("sa", "password");
+        // Mock the service to return the created actor
+        when(actorService.createActor(any(Actor.class))).thenReturn(actor);
 
-        MvcResult result = mockMvc.perform(MockMvcRequestBuilders
-                        .post("/actors")
-                        .headers(headers)
+        // Perform the request to create an actor
+        mockMvc.perform(MockMvcRequestBuilders.post("/actors")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(actor)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andReturn();
-
-        String responseContent = result.getResponse().getContentAsString();
-        Actor createdActor = objectMapper.readValue(responseContent, Actor.class);
-
-        assertEquals(actor, createdActor);
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(1))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.firstName").value("Janez"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.lastName").value("Novak"));
     }
 
-    // TODO: [milosevic85], strangely only GET, DELETE is allowed although I made in security configuration to permitAll at least for test - need to check
     @Test
     void testUpdateActor() throws Exception {
-        Long actorId = 1L;
-        Actor existingActor = new Actor(actorId, "Sylvester", "Stallone", "06.07.1946");
-        Actor updatedActor = new Actor(actorId, "Janez", "Novak", "01.01.1990");
+        Actor actor = new Actor(1L, "Janez", "Novak", "01.01.1990");
+        Actor updatedActor = new Actor(1L, "Updated", "Actor", "01.01.1990");
+        actorService.createActor(actor);
 
-        when(actorService.getActorById(actorId)).thenReturn(java.util.Optional.of(existingActor));
-        when(actorService.updateActor(actorId, updatedActor)).thenReturn(updatedActor);
+        // Mock the service to return the updated actor
+        when(actorService.updateActor(any(Long.class), any(Actor.class))).thenReturn(updatedActor);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBasicAuth("sa", "password");
-
-        MvcResult result = mockMvc.perform(MockMvcRequestBuilders
-                        .put("/actors/{id}", actorId)
-                        .headers(headers)
+        // Perform the request to update an actor
+        mockMvc.perform(MockMvcRequestBuilders.put("/actors/update/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedActor)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andReturn();
-
-        String responseContent = result.getResponse().getContentAsString();
-        Actor updatedActorResponse = objectMapper.readValue(responseContent, Actor.class);
-
-        assertEquals(updatedActor, updatedActorResponse);
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(1))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.firstName").value("Updated"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.lastName").value("Actor"));
     }
-
     @Test
     void testDeleteActor() throws Exception {
         Long actorId = Long.valueOf(1);

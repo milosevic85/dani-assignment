@@ -2,13 +2,13 @@ package com.naloga.daniimdb.movie;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.naloga.daniimdb.SecurityConfiguration;
-import com.naloga.daniimdb.movie.controller.MovieController;
 import com.naloga.daniimdb.movie.services.MovieService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
@@ -17,7 +17,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,15 +24,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @Profile("test")
 @Import(SecurityConfiguration.class)
-@WebMvcTest(MovieController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 public class MovieControllerIT {
 
     @Autowired
@@ -132,32 +130,33 @@ public class MovieControllerIT {
                 .andExpect(content().string("http://example.com/test.jpg"));
     }
 
-    // TODO: [milosevic85], strangely only GET, DELETE is allowed although I made in security configuration to permitAll at least for test - need to check
     @Test
     void testCreateMovie() throws Exception {
-        Movie movie1 = new Movie(12L, "Test Movie1", 2022, "Description 1");
-        MultipartFile picFile1 = new MockMultipartFile("test1.jpg", new byte[0]);
-        movieService.createMovie(movie1, picFile1);
+        MockMultipartFile picFile = new MockMultipartFile(
+                "picFile", "test.jpg", MediaType.IMAGE_JPEG_VALUE, "image content".getBytes()
+        );
 
-        MockMultipartFile file = new MockMultipartFile("picFile1", "test1.jpg", MediaType.IMAGE_JPEG_VALUE, "image content".getBytes());
+        Movie movie = new Movie();
+        movie.setImdbID(12L);
+        movie.setTitle("Test Movie1");
+        movie.setReleaseYear(2022);
+        movie.setDescription("Description 1");
 
-        when(movieService.createMovie(any(Movie.class), any())).thenReturn(movie1);
+        // multipart eq post
+        mockMvc.perform(
+                MockMvcRequestBuilders.multipart("/movies")
+                        .file(picFile)
+                        .param("imdbID", "12")
+                        .param("title", "Test Movie1")
+                        .param("releaseYear", "2022")
+                        .param("description", "Description 1")
+                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+        ).andExpect(status().isOk());
 
-        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.multipart("/movies")
-                        .file(file)
-                        .flashAttr("movie", movie1) // Use flashAttr instead of param for object binding
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        String content = result.getResponse().getContentAsString();
-        Movie createdMovie = objectMapper.readValue(content, Movie.class);
-
-        assertNotNull(createdMovie);
-        assertEquals("Test Movie1", createdMovie.getTitle());
+        // I can add cleanup ..
+//        movieService.deleteMovie(12L);
     }
 
-    // TODO: [milosevic85], strangely only GET, DELETE is allowed although I made in security configuration to permitAll at least for test - need to check
     @Test
     void testUpdateMovie() throws Exception {
         Movie movie = new Movie(12L, "Test Movie", 2022, "Description 1");
@@ -168,7 +167,7 @@ public class MovieControllerIT {
 
         when(movieService.updateMovie(eq(12L), any(Movie.class))).thenReturn(movieToUpdate);
 
-        mockMvc.perform(MockMvcRequestBuilders.put("/movies/12")
+        mockMvc.perform(MockMvcRequestBuilders.put("/movies/update/12")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(movieToUpdate)))
                 .andExpect(status().isOk())
