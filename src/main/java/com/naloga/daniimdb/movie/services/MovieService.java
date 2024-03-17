@@ -18,10 +18,12 @@ import java.util.Optional;
 public class MovieService {
 
     private MovieRepository movieRepository;
+    private PictureService pictureService;
 
     @Autowired
-    public MovieService(MovieRepository movieRepository){
+    public MovieService(MovieRepository movieRepository, PictureService pictureService) {
         this.movieRepository = movieRepository;
+        this.pictureService = pictureService;
     }
 
     // list all movies
@@ -71,7 +73,7 @@ public class MovieService {
     public Movie createMovie(Movie movie, MultipartFile picFile) {
         try {
             // I save the picture associated with the movie
-            PictureService.savePic(movie.getImdbID(), picFile);
+            pictureService.savePic(movie.getImdbID(), picFile);
         } catch (IOException e) {
             e.printStackTrace();
         }
